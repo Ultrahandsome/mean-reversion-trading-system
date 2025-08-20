@@ -1,0 +1,100 @@
+# Main configuration file for Mean Reversion Trading System
+
+# Data configuration
+data:
+  providers:
+    yahoo_finance:
+      enabled: true
+      rate_limit: 2000  # requests per hour
+    alpha_vantage:
+      enabled: false
+      api_key: ${ALPHA_VANTAGE_API_KEY}
+      rate_limit: 500
+    binance:
+      enabled: false
+      api_key: ${BINANCE_API_KEY}
+      api_secret: ${BINANCE_API_SECRET}
+      rate_limit: 1200
+  
+  storage:
+    type: "sqlite"  # sqlite, postgresql, mysql
+    path: "data/market_data.db"
+    connection_string: ${DATABASE_URL}
+  
+  update_frequency: "1h"  # How often to update data
+  lookback_days: 1000     # Historical data to maintain
+
+# Strategy configuration
+strategies:
+  mean_reversion:
+    zscore:
+      lookback_period: 20
+      entry_threshold: 2.0
+      exit_threshold: 0.5
+      min_volume: 1000000  # Minimum daily volume
+    
+    bollinger_bands:
+      lookback_period: 20
+      num_std: 2.0
+      entry_threshold: 0.95  # Entry when price touches band
+      exit_threshold: 0.5    # Exit when price reaches middle
+    
+    rsi_contrarian:
+      rsi_period: 14
+      oversold_threshold: 30
+      overbought_threshold: 70
+      exit_rsi: 50
+
+# Risk management
+risk_management:
+  max_position_size: 0.1      # 10% of portfolio per position
+  max_portfolio_exposure: 0.8  # 80% maximum exposure
+  stop_loss: 0.05             # 5% stop loss
+  take_profit: 0.15           # 15% take profit
+  max_drawdown: 0.2           # 20% maximum drawdown
+  position_sizing_method: "equal_weight"  # equal_weight, volatility_adjusted, kelly
+
+# Backtesting configuration
+backtesting:
+  initial_capital: 100000
+  commission: 0.001           # 0.1% commission per trade
+  slippage: 0.0005           # 0.05% slippage
+  market_impact: 0.0001      # 0.01% market impact
+  
+  # Performance metrics
+  benchmark: "SPY"           # Benchmark for comparison
+  risk_free_rate: 0.02       # 2% annual risk-free rate
+  
+  # Execution settings
+  execution_delay: 1         # Bars delay for execution
+  partial_fills: true        # Allow partial fills
+  
+# Logging configuration
+logging:
+  level: "INFO"              # DEBUG, INFO, WARNING, ERROR
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name} | {message}"
+  file: "logs/trading_system.log"
+  rotation: "1 week"
+  retention: "1 month"
+
+# Environment settings
+environment:
+  timezone: "UTC"
+  trading_hours:
+    start: "09:30"
+    end: "16:00"
+  trading_days: ["monday", "tuesday", "wednesday", "thursday", "friday"]
+
+# Notification settings
+notifications:
+  enabled: false
+  email:
+    smtp_server: ${SMTP_SERVER}
+    smtp_port: 587
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
+    recipients: []
+  
+  slack:
+    webhook_url: ${SLACK_WEBHOOK_URL}
+    channel: "#trading-alerts"
